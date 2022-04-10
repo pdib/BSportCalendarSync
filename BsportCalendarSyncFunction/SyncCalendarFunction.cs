@@ -1,17 +1,8 @@
-
-
 namespace BsportCalendarSyncFunction
 {
-    using System;
     using Microsoft.Azure.WebJobs;
-    using Microsoft.Azure.WebJobs.Host;
     using Microsoft.Extensions.Logging;
     using BSportCalendarSyncCore;
-    using Microsoft.Extensions.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Azure.Identity;
-    using Azure.Core;
 
     public class SyncCalendarFunction
     {

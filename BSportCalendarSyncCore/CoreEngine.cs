@@ -17,9 +17,9 @@
 
     public class CoreEngine
     {
-        private AppConfiguration appConfig;
-        private ILogger<CoreEngine> log;
-        private TokenCredential azureCredential;
+        private readonly AppConfiguration appConfig;
+        private readonly ILogger<CoreEngine> log;
+        private readonly TokenCredential azureCredential;
 
         public CoreEngine(ILogger<CoreEngine> log, AppConfiguration appConfig, TokenCredential azureCredential)
         {

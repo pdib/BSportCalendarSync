@@ -1,6 +1,6 @@
 ﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 
-[assembly: FunctionsStartup(typeof(BsportCalendarSyncFunction.FunctionStartup))]
+[assembly: FunctionsStartup(typeof(BsportCalendarSyncFunction.Startup))]
 namespace BsportCalendarSyncFunction
 {
     using Azure.Core;
@@ -11,7 +11,7 @@ namespace BsportCalendarSyncFunction
     using Microsoft.Extensions.Hosting;
     using System.IO;
 
-    public class FunctionStartup : FunctionsStartup
+    public class Startup : FunctionsStartup
     {
         public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
         {
@@ -24,6 +24,7 @@ namespace BsportCalendarSyncFunction
 
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            builder.Services.AddLogging();
             builder.Services.AddScoped((serviceProvider) =>
             {
                 var config = serviceProvider.GetService<IConfiguration>();
