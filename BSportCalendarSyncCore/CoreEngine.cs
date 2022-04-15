@@ -37,9 +37,11 @@
             var googleClientSecret = keyVaultClient.GetSecret(appConfig.GoogleApiClientSecretKeyVaultKey).Value.Value;
             var googleUserRefreshToken = keyVaultClient.GetSecret(appConfig.GoogleUserRefreshTokenKeyVaultKey).Value.Value;
 
-            var bsportBookings = GetBookings(memberId, memberToken, DateTime.Now);
+            var now = DateTime.Now;
+            var startTime = new DateTime(now.Year, now.Month, now.DayOfYear);
+            var bsportBookings = GetBookings(memberId, memberToken, startTime);
             var googleToken = GetGoogleAuthToken(googleUserRefreshToken, googleClientId, googleClientSecret);
-            var events = GetGoogleEvents(appConfig.CalendarId, DateTime.Now, googleToken);
+            var events = GetGoogleEvents(appConfig.CalendarId, startTime, googleToken);
 
             var bookingsToWrite = bsportBookings.Where(x => events.All(y => y.ExtendedProperties.Private["bsportid"] != x.Id));
             var eventsToDelete = events.Where(y => bsportBookings.All(x => y.ExtendedProperties.Private["bsportid"] != x.Id));
