@@ -38,7 +38,7 @@
             var googleUserRefreshToken = keyVaultClient.GetSecret(appConfig.GoogleUserRefreshTokenKeyVaultKey).Value.Value;
 
             var now = DateTime.Now;
-            var startTime = new DateTime(now.Year, now.Month, now.DayOfYear);
+            var startTime = new DateTime(now.Year, now.Month, now.Day);
             var bsportBookings = GetBookings(memberId, memberToken, startTime);
             var googleToken = GetGoogleAuthToken(googleUserRefreshToken, googleClientId, googleClientSecret);
             var events = GetGoogleEvents(appConfig.CalendarId, startTime, googleToken);
