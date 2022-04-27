@@ -3,6 +3,9 @@ namespace BsportCalendarSyncFunction
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
     using BSportCalendarSyncCore;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Azure.WebJobs.Extensions.Http;
 
     public class SyncCalendarFunction
     {
@@ -14,9 +17,10 @@ namespace BsportCalendarSyncFunction
         }
 
         [FunctionName("SyncCalendarFunction")]
-        public void Run([TimerTrigger("00:30:00")]TimerInfo myTimer, ILogger log)
+        public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "GET", "/api/calendar-sync")] HttpRequest request, ILogger log)
         {
             engine.SyncCalendars();
+            return new OkResult();
         }
     }
 }
