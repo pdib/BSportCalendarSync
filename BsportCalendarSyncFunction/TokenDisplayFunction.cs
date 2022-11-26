@@ -9,7 +9,9 @@
     public class TokenDisplayFunction
     {
         [FunctionName("oauth-fetcher")]
-        public IActionResult DisplayToken([HttpTrigger(AuthorizationLevel.Anonymous, "GET", "/api/oauth-fetcher")]HttpRequest request, ILogger log)
+        public IActionResult DisplayToken(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "GET", "/api/oauth-fetcher")] HttpRequest request,
+            ILogger log)
         {
             log.LogInformation("Receiving token from auth.");
 

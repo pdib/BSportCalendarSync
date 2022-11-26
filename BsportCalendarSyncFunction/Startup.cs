@@ -13,15 +13,6 @@ namespace BsportCalendarSyncFunction
 
     public class Startup : FunctionsStartup
     {
-        public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
-        {
-            base.ConfigureAppConfiguration(builder);
-            builder.ConfigurationBuilder
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables();
-        }
-
         public override void Configure(IFunctionsHostBuilder builder)
         {
             builder.Services.AddLogging();
@@ -29,7 +20,8 @@ namespace BsportCalendarSyncFunction
             {
                 var config = serviceProvider.GetService<IConfiguration>();
                 AppConfiguration appConfig = new();
-                config.GetRequiredSection("BSportCalendarSyncSettings")
+                config
+                    .GetRequiredSection("BSportCalendarSyncSettings")
                     .Bind(appConfig);
                 return appConfig;
             });
@@ -44,6 +36,15 @@ namespace BsportCalendarSyncFunction
                 return new DefaultAzureCredential();
             });
             builder.Services.AddTransient<CoreEngine>();
+        }
+
+        public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
+        {
+            base.ConfigureAppConfiguration(builder);
+            builder.ConfigurationBuilder
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables();
         }
     }
 }

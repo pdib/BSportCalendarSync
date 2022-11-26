@@ -16,18 +16,21 @@
             var host = Host.CreateDefaultBuilder()
                 .ConfigureHostConfiguration((configBuilder) =>
                 {
-                    configBuilder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    configBuilder
+                        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                         .AddEnvironmentVariables()
                         .Build();
                 })
                 .ConfigureServices((context, services) =>
                 {
                     AppConfiguration appConfig = new();
-                    context.Configuration.GetRequiredSection("BSportCalendarSyncSettings")
+                    context.Configuration
+                        .GetRequiredSection("BSportCalendarSyncSettings")
                         .Bind(appConfig);
                     services.AddSingleton(appConfig);
 
-                    services.AddTransient<TokenCredential>(_ => new ClientSecretCredential(appConfig.TenantId, appConfig.AppId, appConfig.AppSecret));
+                    services.AddTransient<TokenCredential>(
+                        _ => new ClientSecretCredential(appConfig.TenantId, appConfig.AppId, appConfig.AppSecret));
                     services.AddLogging(configure => configure.AddConsole());
                     services.AddTransient<CoreEngine>();
                 })
