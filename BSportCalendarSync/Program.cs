@@ -8,10 +8,12 @@
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Console;
+    using System.Runtime.CompilerServices;
+    using System.Threading.Tasks;
 
     internal class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var host = Host.CreateDefaultBuilder()
                 .ConfigureHostConfiguration((configBuilder) =>
@@ -32,12 +34,13 @@
                     services.AddTransient<TokenCredential>(
                         _ => new ClientSecretCredential(appConfig.TenantId, appConfig.AppId, appConfig.AppSecret));
                     services.AddLogging(configure => configure.AddConsole());
+                    services.AddTransient<SyncConfigStorage>();
                     services.AddTransient<CoreEngine>();
                 })
                 .Build();
 
             var engine = host.Services.GetService<CoreEngine>();
-            engine.SyncCalendars();
+            engine.SyncCalendarsForAllUsers();
         }
     }
 }

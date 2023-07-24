@@ -35,6 +35,7 @@ namespace BsportCalendarSyncFunction
                 }
                 return new DefaultAzureCredential();
             });
+            builder.Services.AddTransient<SyncConfigStorage>();
             builder.Services.AddTransient<CoreEngine>();
         }
 

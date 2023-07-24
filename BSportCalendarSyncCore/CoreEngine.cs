@@ -5,6 +5,7 @@
     using Azure.Security.KeyVault.Secrets;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Identity.Client;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
     using System;
@@ -20,28 +21,48 @@
         private readonly AppConfiguration appConfig;
         private readonly ILogger<CoreEngine> log;
         private readonly TokenCredential azureCredential;
+        private readonly SyncConfigStorage syncStorage;
 
-        public CoreEngine(ILogger<CoreEngine> log, AppConfiguration appConfig, TokenCredential azureCredential)
+        public CoreEngine(ILogger<CoreEngine> log, AppConfiguration appConfig, TokenCredential azureCredential, SyncConfigStorage syncStorage)
         {
             this.log = log;
             this.appConfig = appConfig;
             this.azureCredential = azureCredential;
+            this.syncStorage = syncStorage;
+        }   
+
+        public void SyncCalendarsForAllUsers()
+        {
+            var itemsToSync = syncStorage.ReadSyncConfigItems();
+
+            foreach (var item in itemsToSync)
+            {
+                try
+                {
+                    SyncCalendars(item.MemberId, item.MemberToken, item.GoogleRefreshToken, item.GoogleCalendarId);
+                }
+                catch (Exception e)
+                {
+                    log.LogError($"Could not sync calendar for memberId {item.MemberId}. Exception message: {e.Message}");
+                }
+            }
         }
 
-        public void SyncCalendars()
+        public void SyncCalendars(
+            string memberId,
+            string memberToken,
+            string googleUserRefreshToken,
+            string googleCalendarId)
         {
             var keyVaultClient = new SecretClient(new Uri(appConfig.KeyVaultUrl), azureCredential);
-            var memberId = keyVaultClient.GetSecret(appConfig.MemberIdKeyVaultKey).Value.Value;
-            var memberToken = keyVaultClient.GetSecret(appConfig.MemberTokenKeyVaultKey).Value.Value;
             var googleClientId = keyVaultClient.GetSecret(appConfig.GoogleApiClientIdKeyVaultKey).Value.Value;
             var googleClientSecret = keyVaultClient.GetSecret(appConfig.GoogleApiClientSecretKeyVaultKey).Value.Value;
-            var googleUserRefreshToken = keyVaultClient.GetSecret(appConfig.GoogleUserRefreshTokenKeyVaultKey).Value.Value;
 
             var now = DateTime.Now;
             var startTime = new DateTime(now.Year, now.Month, now.Day);
             var bsportBookings = GetBookings(memberId, memberToken, startTime);
             var googleToken = GetGoogleAuthToken(googleUserRefreshToken, googleClientId, googleClientSecret);
-            var events = GetGoogleEvents(appConfig.CalendarId, startTime, googleToken);
+            var events = GetGoogleEvents(googleCalendarId, startTime, googleToken);
 
             var bookingsToWrite = bsportBookings.Where(x => events.All(y => y.ExtendedProperties.Private["bsportid"] != x.Id));
             var eventsToDelete = events.Where(y => bsportBookings.All(x => y.ExtendedProperties.Private["bsportid"] != x.Id));
@@ -49,8 +70,8 @@
             log.LogInformation($"Creating {bookingsToWrite.Count()} events. Deleting {eventsToDelete.Count()} events.");
 
             var eventsToWrite = ConvertBookingsToEvents(bookingsToWrite);
-            PostGoogleEvents(appConfig.CalendarId, eventsToWrite, googleToken);
-            DeleteGoogleEvents(appConfig.CalendarId, eventsToDelete, googleToken);
+            PostGoogleEvents(googleCalendarId, eventsToWrite, googleToken);
+            DeleteGoogleEvents(googleCalendarId, eventsToDelete, googleToken);
 
             log.LogInformation("Calendar sync complete.");
         }

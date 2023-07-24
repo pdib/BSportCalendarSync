@@ -19,8 +19,12 @@ namespace BsportCalendarSyncFunction
         [FunctionName("SyncCalendarFunction")]
         public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "GET", "/api/calendar-sync")] HttpRequest request, ILogger log)
         {
+<<<<<<< HEAD
             engine.SyncCalendars();
             return new OkResult();
+=======
+            engine.SyncCalendarsForAllUsers();
+>>>>>>> Add table storage support
         }
     }
 }
