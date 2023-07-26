@@ -16,6 +16,7 @@
         public EventDate End { get; set; } = new();
         public EventExtendedProperties ExtendedProperties { get; set; } = new();
 
+        public string ColorId { get; set; }
 
         public class EventDate
         {

@@ -39,7 +39,7 @@
             {
                 try
                 {
-                    SyncCalendars(item.MemberId, item.MemberToken, item.GoogleRefreshToken, item.GoogleCalendarId);
+                    SyncCalendars(item.MemberId, item.MemberToken, item.GoogleRefreshToken, item.GoogleCalendarId, item.GoogleColorId);
                 }
                 catch (Exception e)
                 {
@@ -52,7 +52,8 @@
             string memberId,
             string memberToken,
             string googleUserRefreshToken,
-            string googleCalendarId)
+            string googleCalendarId,
+            string googleColorId = "1")
         {
             var keyVaultClient = new SecretClient(new Uri(appConfig.KeyVaultUrl), azureCredential);
             var googleClientId = keyVaultClient.GetSecret(appConfig.GoogleApiClientIdKeyVaultKey).Value.Value;
@@ -69,14 +70,14 @@
 
             log.LogInformation($"Creating {bookingsToWrite.Count()} events. Deleting {eventsToDelete.Count()} events.");
 
-            var eventsToWrite = ConvertBookingsToEvents(bookingsToWrite);
+            var eventsToWrite = ConvertBookingsToEvents(bookingsToWrite, googleColorId);
             PostGoogleEvents(googleCalendarId, eventsToWrite, googleToken);
             DeleteGoogleEvents(googleCalendarId, eventsToDelete, googleToken);
 
             log.LogInformation("Calendar sync complete.");
         }
 
-        List<GoogleCalendarEvent> ConvertBookingsToEvents(IEnumerable<BsportBooking> bookings)
+        List<GoogleCalendarEvent> ConvertBookingsToEvents(IEnumerable<BsportBooking> bookings, string colorId)
         {
             List<GoogleCalendarEvent> result = new();
             foreach (var booking in bookings)
@@ -85,6 +86,7 @@
                 calendarEvent.ExtendedProperties.Private.Add("isbsport", "true");
                 calendarEvent.ExtendedProperties.Private.Add("bsportid", booking.Id);
                 calendarEvent.Summary = booking.Name;
+                calendarEvent.ColorId = colorId;
                 calendarEvent.Start.Date = null;
                 calendarEvent.Start.DateTime = booking.OfferDateStart;
                 calendarEvent.Start.TimeZone = "Europe/Paris";
